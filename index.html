@@ -155,13 +155,14 @@
             }
 
             // Disable button during submission to mock real server delay
+            /**
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending to Kitchen...';
 
             try {
                 // Insert order entry directly into Supabase (Assumes table name 'orders')
                 const { data, error } = await supabase
-                    .from('orders')
+                    .from('request_items')
                     .insert([
                         { location_id: locationId, pizza_id: pizzaId, quantity: qty, status: 'Pending' }
                     ])
@@ -204,6 +205,7 @@
                 submitBtn.textContent = 'Submit Request to Kitchen';
             }
         });
+        **//
     </script>
 </body>
 </html>
