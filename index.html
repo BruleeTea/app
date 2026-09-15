@@ -50,13 +50,145 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('orderForm').addEventListener('submit', function(e) {
+ <script>
+        // 1. Initialize Supabase (Replace with your actual Supabase Project credentials)
+        const SUPABASE_URL = 'https://jdfrifcmmsqysppsfdds.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_YG9QoVQcZ_KLcd0xAKmwoA_5ED1H6jF';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const orderForm = document.getElementById('orderForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const orderList = document.getElementById('orderList');
+        const noOrdersMessage = document.getElementById('noOrdersMessage');
+        const locationSelect = document.getElementById('locationSelect');
+        const pizzaSelect = document.getElementById('pizzaSelect');
+
+        // Helper function to show/hide the "No active requests" message
+        function toggleEmptyMessage() {
+            if (orderList.children.length === 0) {
+                noOrdersMessage.style.display = 'block';
+            } else {
+                noOrdersMessage.style.display = 'none';
+            }
+        }
+
+        // 2. Load Dropdown Data dynamically on Page Load
+        async function loadDropdownData() {
+            try {
+                // Fetch locations (Assumes table name 'locations' with columns 'id' and 'name')
+                const { data: locations, error: locError } = await supabase
+                    .from('locations')
+                    .select('id, name');
+                
+                if (locError) throw locError;
+
+                // Fetch pizzas (Assumes table name 'pizzas' with columns 'id' and 'name')
+                const { data: pizzas, error: pizzaError } = await supabase
+                    .from('pizzas')
+                    .select('id, name');
+
+                if (pizzaError) throw pizzaError;
+
+                // Populate Location Dropdown
+                locationSelect.innerHTML = '<option value="" selected disabled>Choose a location...</option>';
+                locations.forEach(loc => {
+                    const opt = document.createElement('option');
+                    opt.value = loc.id;
+                    opt.textContent = loc.name;
+                    locationSelect.appendChild(opt);
+                });
+                locationSelect.disabled = false;
+
+                // Populate Pizza Dropdown
+                pizzaSelect.innerHTML = '<option value="" selected disabled>Choose a pizza...</option>';
+                pizzas.forEach(piz => {
+                    const opt = document.createElement('option');
+                    opt.value = piz.id;
+                    opt.textContent = piz.name;
+                    pizzaSelect.appendChild(opt);
+                });
+                pizzaSelect.disabled = false;
+
+                // Enable the form submit button once data is ready
+                submitBtn.disabled = false;
+
+            } catch (err) {
+                console.error('Error loading dropdown data:', err);
+                locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+                pizzaSelect.innerHTML = '<option value="">Error loading pizzas</option>';
+                alert('Failed to connect to Supabase. Check your URL/Keys or database tables.');
+            }
+        }
+
+        // Run data fetching step immediately
+        loadDropdownData();
+
+        // 3. Handle Form Submission
+        orderForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const location = document.getElementById('locationSelect').selectedOptions[0].text;
-            const pizza = document.getElementById('pizzaSelect').selectedOptions[0].text;
-            const qty = document.getElementById('quantityInput').value;
-            alert(`Order Placed!\nLocation: ${location}\nPizza: ${pizza}\nQuantity: ${qty}`);
+            
+            const locationId = locationSelect.value;
+            const locationText = locationSelect.selectedOptions[0].text;
+            
+            const pizzaId = pizzaSelect.value;
+            const pizzaText = pizzaSelect.selectedOptions[0].text;
+            
+            const qty = parseInt(document.getElementById('quantityInput').value, 10);
+
+            if (!locationId || !pizzaId || isNaN(qty) || qty < 1) {
+                alert('Please fill out all fields with valid information.');
+                return;
+            }
+
+            // Disable button during submission to mock real server delay
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending to Kitchen...';
+
+            try {
+                // Insert order entry directly into Supabase (Assumes table name 'orders')
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([
+                        { location_id: locationId, pizza_id: pizzaId, quantity: qty, status: 'Pending' }
+                    ])
+                    .select();
+
+                if (error) throw error;
+
+                // Create unique ID for managing this specific UI row element
+                const orderId = 'order_' + Date.now();
+
+                // Create a new list item for the active requests
+                const listItem = document.createElement('li');
+                listItem.id = orderId;
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center p-3';
+                listItem.innerHTML = `
+                    <div>
+                        <span class="badge bg-warning text-dark mb-1">Pending</span>
+                        <div><strong>${pizzaText}</strong> &times; ${qty}</div>
+                        <small class="text-muted">Location: ${locationText}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger complete-btn">Complete</button>
+                `;
+
+                // Add complete button click listener directly to this specific item
+                listItem.querySelector('.complete-btn').addEventListener('click', function() {
+                    listItem.remove();
+                    toggleEmptyMessage();
+                });
+
+                orderList.appendChild(listItem);
+                toggleEmptyMessage();
+                orderForm.reset();
+
+            } catch (error) {
+                alert('Failed to send order to the database.');
+                console.error(error);
+            } finally {
+                // Re-enable form button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Request to Kitchen';
+            }
         });
     </script>
 </body>
