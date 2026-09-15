@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Ordering System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Request Pizza</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="orderForm">
+                            <div class="mb-3">
+                                <label for="locationSelect" class="form-label">Service Location</label>
+                                <select class="form-select" id="locationSelect" required>
+                                    <option value="" selected disabled>Choose a location...</option>
+                                    <option value="2">Offside (Service)</option>
+                                </select>
+                                <div class="form-text">Select the area requesting the pizza.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pizzaSelect" class="form-label">Pizza Variety</label>
+                                <select class="form-select" id="pizzaSelect" required>
+                                    <option value="" selected disabled>Choose a pizza...</option>
+                                    <option value="1">Cheese</option>
+                                    <option value="2">Pepperoni</option>
+                                    <option value="3">House Special</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="quantityInput" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="quantityInput" min="1" value="1" required>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">Submit Request to Kitchen</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const location = document.getElementById('locationSelect').selectedOptions[0].text;
+            const pizza = document.getElementById('pizzaSelect').selectedOptions[0].text;
+            const qty = document.getElementById('quantityInput').value;
+            alert(`Order Placed!\nLocation: ${location}\nPizza: ${pizza}\nQuantity: ${qty}`);
+        });
+    </script>
+</body>
+</html>
