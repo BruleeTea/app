@@ -62,7 +62,7 @@
         // 1. Initialize Supabase (Replace with your actual Supabase Project credentials)
         const SUPABASE_URL = 'https://jdfrifcmmsqysppsfdds.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_YG9QoVQcZ_KLcd0xAKmwoA_5ED1H6jF';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = supabaseJS.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const orderForm = document.getElementById('orderForm');
         const submitBtn = document.getElementById('submitBtn');
